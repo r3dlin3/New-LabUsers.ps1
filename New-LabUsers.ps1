@@ -21,12 +21,12 @@ with.
 
 .PARAMETER OU
 Use this parameter if you want to name the top-level OU something different than
-the default name of "Company".
+the default name of "CORP".
 
 .EXAMPLE
 .\New-LabUsers.ps1
 Uses the RandomNameList.txt file to generate the list of user accounts in an OU
-called "Company" in Active Directory.
+called "CORP" in Active Directory.
 
 .EXAMPLE
 .\New-LabUsers.ps1 -InputFileName .\MyNames.txt -PasswordLength 8 -OU TestLab
@@ -93,7 +93,13 @@ param (
     [int]$PasswordLength = 16,
 
     [Parameter( Mandatory=$false)]
+    [string]$DefaultPassword = "_HRt0cbKix",
+
+    [Parameter( Mandatory=$false)]
     [string]$OU = "Company"
+
+    [Parameter( Mandatory=$false)]
+    [string]$UPNSuffix
 
 	)
 
@@ -116,8 +122,11 @@ $SubOUs = @(
     )
 
 #Country and city for the test users
-$Country = "AU"
-$City = "Sydney"
+$DefaultCountry = "AU"
+$DefaultCity = "Sydney"
+
+
+
 
 #List of department names randomly chosen for each user
 $Departments = @(
@@ -132,7 +141,6 @@ $Departments = @(
     )
 
 # Password length and character set to use for random password generation
-$PasswordLength = 16
 $ascii=$NULL;For ($a=33;$a -le 126;$a++) {$ascii+=,[char][byte]$a }
 
 
@@ -182,6 +190,11 @@ if (!(Test-Path $InputFileName))
 $Forest = Get-ADForest
 $Domain = Get-ADDomain
 
+
+if ([string]::IsNullOrEmpty($UPNSuffix) {
+    $UPNSuffix = $Forest.Name
+}
+
 $OUPath = "OU=" + $CompanyOU + "," + $Domain.DistinguishedName
 
 if (!(Test-OUPath $OUPath))
@@ -229,8 +242,13 @@ foreach ($RawName in $RawNames)
 
     $FirstName = ($RawName.Trim()).Split(" ")[0]
     $LastName = ($RawName.Trim()).Split(" ")[1]
-
+    $officephone = "555-" + ("{0:D4}" -f (Get-Random -Min 0000 -Maximum 9999))
     $Department = $Departments[(Get-Random -Minimum 0 -Maximum ($($Departments.Count) - 1))]
+    if ($DefaultPassword) {
+        $passwd = $DefaultPassword
+    } else {
+        $passwd = Get-TempPassword -length $PasswordLength -sourcedata $ascii
+    }
 
     $Props = [ordered]@{
         "FullName" = $FirstName + " " + $LastName;
@@ -238,7 +256,12 @@ foreach ($RawName in $RawNames)
         "FirstName" = $FirstName;
         "LastName" = $LastName;
         "Department" = $Department
-        }
+        "OfficePhone" = $officephone
+        "Password" = $passwd
+        "Country" = $DefaultCountry
+        "City" = $DefaultCity
+        "UserPrincipalName" = "$($Name.FirstName).$($Name.LastName)@$UPNSuffix" `
+    }
 
     $User = New-Object PSObject -Property $Props
 
@@ -250,24 +273,20 @@ foreach ($RawName in $RawNames)
 foreach ($Name in $ListOfNames)
 {
     Write-Host "Creating User: $($Name.FullName)"
-
-    $randompassword = Get-TempPassword -length $PasswordLength -sourcedata $ascii
-    $officephone = "555-" + ("{0:D4}" -f (Get-Random -Min 0000 -Maximum 9999))
-
     try
     {
         New-ADUser -Name $Name.FullName `
                -GivenName $Name.FirstName `
                -Surname $Name.LastName `
                -SamAccountName $Name.AccountName `
-               -UserPrincipalName "$($Name.FirstName).$($Name.LastName)@$($Forest.Name)" `
+               -UserPrincipalName $Name.UserPrincipalName `
                -Department $Name.Department `
                -Path $UsersOU `
                -Enabled $true `
-               -AccountPassword (ConvertTo-SecureString $randompassword -AsPlainText -Force) `
-               -OfficePhone $officephone `
-               -Country $country `
-               -City $city `
+               -AccountPassword (ConvertTo-SecureString $Name.Password -AsPlainText -Force) `
+               -OfficePhone $Name.Officephone `
+               -Country $Name.Country `
+               -City $Name.$city `
                -ErrorAction STOP
     }
     catch
