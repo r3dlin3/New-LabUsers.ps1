@@ -96,7 +96,7 @@ param (
     [string]$DefaultPassword = "_HRt0cbKix",
 
     [Parameter( Mandatory=$false)]
-    [string]$OU = "Company"
+    [string]$OU = "CORP",
 
     [Parameter( Mandatory=$false)]
     [string]$UPNSuffix
@@ -122,8 +122,8 @@ $SubOUs = @(
     )
 
 #Country and city for the test users
-$DefaultCountry = "AU"
-$DefaultCity = "Sydney"
+$DefaultCountry = "FR"
+$DefaultCity = "Paris"
 
 
 
@@ -191,7 +191,7 @@ $Forest = Get-ADForest
 $Domain = Get-ADDomain
 
 
-if ([string]::IsNullOrEmpty($UPNSuffix) {
+if ([string]::IsNullOrEmpty($UPNSuffix)) {
     $UPNSuffix = $Forest.Name
 }
 
@@ -260,7 +260,7 @@ foreach ($RawName in $RawNames)
         "Password" = $passwd
         "Country" = $DefaultCountry
         "City" = $DefaultCity
-        "UserPrincipalName" = "$($Name.FirstName).$($Name.LastName)@$UPNSuffix" `
+        "UserPrincipalName" = "$FirstName.$LastName@$UPNSuffix" `
     }
 
     $User = New-Object PSObject -Property $Props
@@ -269,7 +269,7 @@ foreach ($RawName in $RawNames)
 
 }
 
-
+[int] $nbUser = 0
 foreach ($Name in $ListOfNames)
 {
     Write-Host "Creating User: $($Name.FullName)"
@@ -288,13 +288,14 @@ foreach ($Name in $ListOfNames)
                -Country $Name.Country `
                -City $Name.$city `
                -ErrorAction STOP
+        $nbUser++
     }
     catch
     {
         Write-Warning $_.Exception.Message
     }
 }
-Write-Host -ForegroundColor green "$($ListOfNames.Count) users created."
+Write-Host -ForegroundColor green "$nbUser out of $($ListOfNames.Count) users created."
 
 #...................................
 # Finished
