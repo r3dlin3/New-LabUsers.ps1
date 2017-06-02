@@ -93,7 +93,7 @@ param (
     [int]$PasswordLength = 16,
 
     [Parameter( Mandatory=$false)]
-    [string]$DefaultPassword = "_HRt0cbKix",
+    [string]$DefaultPassword,
 
     [Parameter( Mandatory=$false)]
     [string]$OU = "CORP",
