@@ -33,27 +33,17 @@ called "CORP" in Active Directory.
 Uses the MyNames.txt file to generate the list of user accounts in an OU
 called "TestLab" in Active Directory.
 
+.EXAMPLE
+.\New-LabUsers.ps1 -UPNSuffix contoso.com
+
 .NOTES
-Script written by: Paul Cunningham
+Script originaly written by: Paul Cunningham (https://github.com/cunninghamp/New-LabUsers.ps1)
 
 Random Password Generator function from Scripting Guys blog post:
 http://blogs.technet.com/b/heyscriptingguy/archive/2013/06/03/generating-a-new-password-with-windows-powershell.aspx
 
 Random name list generated from:
 http://listofrandomnames.com
-
-Find me on:
-
-* My Blog:	http://paulcunningham.me
-* Twitter:	https://twitter.com/paulcunningham
-* LinkedIn:	http://au.linkedin.com/in/cunninghamp/
-* Github:	https://github.com/cunninghamp
-
-For more Exchange Server tips, tricks and news
-check out Exchange Server Pro.
-
-* Website:	http://exchangeserverpro.com
-* Twitter:	http://twitter.com/exchservpro
 
 License:
 
@@ -80,7 +70,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 Change Log
-V1.00, 22/11/2015 - Initial version
+V1.00, 2015-11-22 - Initial version
+v1.1, 2017-06-02 - Various changes
 #>
 
 [CmdletBinding()]
