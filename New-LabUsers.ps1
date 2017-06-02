@@ -294,9 +294,12 @@ foreach ($Name in $ListOfNames)
         Write-Warning $_.Exception.Message
     }
 }
+Write-Host -ForegroundColor green "$($ListOfNames.Count) users created."
 
 #...................................
 # Finished
 #...................................
 
-Write-Host "Finished."
+Write-Host -ForegroundColor green "Finished."
+
+
